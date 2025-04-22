@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sam's Notebook - Resizable/Deletable Elements & Upload</title>
+    <title>Sam's Notebook - Enhanced with Shapes, Stickers, and Drawing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -167,7 +167,7 @@
             -webkit-user-select: text;
             -moz-user-select: text;
             -ms-user-select: text;
-            font-size: 16px; /* Default font size */
+            font-size: 16px;
         }
 
         .scrapbook-text:focus {
@@ -196,6 +196,59 @@
             height: 100%;
             object-fit: contain;
             pointer-events: none;
+        }
+
+        .scrapbook-shape {
+            background-color: rgba(52, 211, 153, 0.3);
+            border: 2px solid #34d399;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .scrapbook-shape.circle {
+            border-radius: 50%;
+        }
+
+        .scrapbook-shape.line {
+            background: none;
+            border: none;
+            height: 4px;
+            background-color: #34d399;
+        }
+
+        .scrapbook-shape.arrow::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 15px solid #34d399;
+            top: -15px;
+            right: 5px;
+            transform: rotate(45deg);
+        }
+
+        .scrapbook-sticker {
+            font-size: 40px;
+            line-height: 1;
+            background: none;
+            border: none;
+            padding: 5px;
+            text-align: center;
+            box-shadow: none;
+        }
+
+        .drawing-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            cursor: crosshair;
+        }
+
+        .drawing-active {
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .delete-button {
@@ -302,7 +355,7 @@
         }
 
         .controls-container {
-            @apply mt-8 flex justify-center items-center space-x-4 relative;
+            @apply mt-8 flex flex-wrap justify-center items-center space-x-2 space-y-2 relative;
             padding: 0.75rem;
             background-color: rgba(255, 255, 255, 0.7);
             border-radius: 1rem;
@@ -317,10 +370,10 @@
         }
 
         .control-button {
-            @apply px-5 py-2 bg-emerald-500 text-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-75 transition duration-200 ease-in-out flex items-center justify-center;
-            font-size: 1rem;
+            @apply px-4 py-2 bg-emerald-500 text-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-75 transition duration-200 ease-in-out flex items-center justify-center;
+            font-size: 0.9rem;
             font-weight: 500;
-            min-width: 100px;
+            min-width: 80px;
             line-height: 1.5;
             letter-spacing: 0.5px;
             position: relative;
@@ -455,6 +508,182 @@
             display: none;
         }
 
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-item {
+            padding: 0.75rem;
+            background-color: #f0fdf4;
+            border: 2px solid #a7f3d0;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .modal-item:hover {
+            background-color: #a7f3d0;
+            border-color: #34d399;
+        }
+
+        .modal-item.shape-circle::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+            border-radius: 50%;
+            background-color: #34d399;
+        }
+
+        .modal-item.shape-square::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+            background-color: #34d399;
+        }
+
+        .modal-item.shape-line::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 4px;
+            margin: 18px auto;
+            background-color: #34d399;
+        }
+
+        .modal-item.shape-arrow::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 4px;
+            margin: 18px auto;
+            background-color: #34d399;
+            position: relative;
+        }
+
+        .modal-item.shape-arrow::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid #34d399;
+            top: -4px;
+            right: -8px;
+            transform: rotate(45deg);
+        }
+
+        .modal-item.sticker {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .modal-close {
+            @apply px-4 py-2 bg-gray-500 text-white rounded-lg shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 transition duration-200 ease-in-out;
+            margin-top: 1rem;
+        }
+
+        /* Drawing Controls */
+        .drawing-controls {
+            @apply flex items-center space-x-2 mt-2;
+            display: none;
+        }
+
+        .drawing-controls select,
+        .drawing-controls button {
+            @apply px-3 py-1 bg-emerald-500 text-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-75 transition duration-200 ease-in-out;
+            font-size: 0.8rem;
+        }
+
+        .drawing-controls button:not(:disabled):hover {
+            @apply bg-emerald-600;
+        }
+
+        .drawing-controls button:disabled {
+            @apply opacity-60 cursor-not-allowed bg-emerald-400;
+        }
+
+        .drawing-controls select {
+            background-color: #10b981;
+        }
+
+        .brush-size {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brush-size.small::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .brush-size.medium::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .brush-size.large::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .brush-size.selected {
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px #34d399;
+        }
+
         @media (max-width: 768px) {
             .notebook-container {
                 max-height: 600px;
@@ -466,9 +695,9 @@
             }
 
             .control-button {
-                min-width: 80px;
-                font-size: 0.9rem;
-                padding: 0.375rem 1rem;
+                min-width: 70px;
+                font-size: 0.8rem;
+                padding: 0.375rem 0.75rem;
             }
 
             #add-image-button {
@@ -482,6 +711,34 @@
 
             .page-content {
                 padding: 1.25rem;
+            }
+
+            .modal-content {
+                padding: 1rem;
+            }
+
+            .modal-grid {
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            }
+
+            .modal-item {
+                padding: 0.5rem;
+            }
+
+            .modal-item.shape-circle::before,
+            .modal-item.shape-square::before {
+                width: 30px;
+                height: 30px;
+            }
+
+            .modal-item.shape-line::before,
+            .modal-item.shape-arrow::before {
+                width: 30px;
+                margin: 13px auto;
+            }
+
+            .modal-item.sticker {
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -504,7 +761,6 @@
 
     <input type="file" id="image-upload-input" accept="image/*">
 
-    
     <div class="controls-container">
         <button id="prev-page" class="control-button tooltip-trigger" disabled>
             <span class="tooltip">Previous Page</span>
@@ -516,26 +772,67 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
         </button>
+        <button id="add-shape-button" class="control-button tooltip-trigger" disabled>
+            <span class="tooltip">Add Shape</span>
+            Shape
+        </button>
+        <button id="add-sticker-button" class="control-button tooltip-trigger" disabled>
+            <span class="tooltip">Add Sticker</span>
+            Sticker
+        </button>
+        <button id="drawing-button" class="control-button tooltip-trigger" disabled>
+            <span class="tooltip">Toggle Drawing</span>
+            Draw
+        </button>
         <button id="next-page" class="control-button tooltip-trigger">
             <span class="tooltip">Next Page</span>
             Next >
         </button>
+        <div id="drawing-controls" class="drawing-controls">
+            <select id="color-picker">
+                <option value="#000000">Black</option>
+                <option value="#ff0000">Red</option>
+                <option value="#0000ff">Blue</option>
+                <option value="#34d399" selected>Green</option>
+                <option value="#ffff00">Yellow</option>
+            </select>
+            <button id="brush-small" class="brush-size small selected">S</button>
+            <button id="brush-medium" class="brush-size medium">M</button>
+            <button id="brush-large" class="brush-size large">L</button>
+            <button id="undo-drawing" class="tooltip-trigger" disabled>
+                <span class="tooltip">Undo</span>
+                Undo
+            </button>
+            <button id="clear-drawing" class="tooltip-trigger">
+                <span class="tooltip">Clear Canvas</span>
+                Clear
+            </button>
+        </div>
+    </div>
+
+    <canvas id="drawing-canvas" style="display: none;"></canvas>
+
+    <div id="selector-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Select an Item</h2>
+            <div id="modal-grid" class="modal-grid"></div>
+            <button id="modal-close" class="modal-close">Close</button>
+        </div>
     </div>
 
     <div id="page-data-storage">
         <div class="page-content" data-page-number="0">
             <h2 class="text-xl font-semibold mb-4 text-green-800 opacity-60 pointer-events-none absolute top-4 left-4">Inside Cover</h2>
             <div class="scrapbook-element scrapbook-text welcome-instructions" style="left: 50px; top: 70px; width: 250px; z-index: 10;" contenteditable="true">
-                Welcome to your notebook! Click Next to start writing and adding images to your pages.
+                Welcome to your notebook! Click Next to start writing, adding images, shapes, stickers, or drawing.
             </div>
         </div>
-
         <div class="page-content" data-page-number="1">
             <h2 class="text-xl font-semibold mb-4 text-green-800 opacity-60 pointer-events-none absolute top-4 left-4">Page 1</h2>
             <div class="scrapbook-element scrapbook-text welcome-instructions" style="left: 50px; top: 70px; width: 250px; z-index: 10;" contenteditable="true">
                 • Double-click to add notes<br>
                 • Drag elements to move them<br>
-                • Use the image button to add photos<br>
+                • Use buttons to add images, shapes, stickers, or draw<br>
                 • Try pasting text or images<br>
                 • Click to edit, hover to delete
             </div>
@@ -544,7 +841,6 @@
         <div class="page-content" data-page-number="2">
             <h2 class="text-xl font-semibold mb-4 text-green-800 opacity-60 pointer-events-none absolute top-4 left-4">Page 2</h2>
         </div>
-
         <div class="page-content" data-page-number="3">
             <h2 class="text-xl font-semibold mb-4 text-green-800 opacity-60 pointer-events-none absolute top-4 left-4">Page 3</h2>
             <div class="scrapbook-element scrapbook-image" style="left: 80px; top: 120px; width: 150px; height: 100px; z-index: 12;">
@@ -554,14 +850,12 @@
         <div class="page-content" data-page-number="4">
             <h2 class="text-xl font-semibold mb-4 text-green-800 opacity-60 pointer-events-none absolute top-4 left-4">Page 4</h2>
         </div>
-
         <div class="page-content" data-page-number="5">
             <h2 class="text-xl font-semibold mb-4 text-green-800 opacity-60 pointer-events-none absolute top-4 left-4">Page 5</h2>
         </div>
         <div class="page-content" data-page-number="6">
             <h2 class="text-xl font-semibold mb-4 text-green-800 opacity-60 pointer-events-none absolute top-4 left-4">Page 6</h2>
         </div>
-
         <div class="page-content" data-page-number="7">
             <h2 class="text-xl font-semibold mb-4 text-green-800 opacity-60 pointer-events-none absolute top-4 left-4">Inside Back Cover</h2>
         </div>
@@ -577,7 +871,22 @@
             const prevButton = document.getElementById('prev-page');
             const nextButton = document.getElementById('next-page');
             const addImageButton = document.getElementById('add-image-button');
+            const addShapeButton = document.getElementById('add-shape-button');
+            const addStickerButton = document.getElementById('add-sticker-button');
+            const drawingButton = document.getElementById('drawing-button');
             const imageUploadInput = document.getElementById('image-upload-input');
+            const drawingCanvas = document.getElementById('drawing-canvas');
+            const drawingControls = document.getElementById('drawing-controls');
+            const colorPicker = document.getElementById('color-picker');
+            const brushSmall = document.getElementById('brush-small');
+            const brushMedium = document.getElementById('brush-medium');
+            const brushLarge = document.getElementById('brush-large');
+            const undoDrawing = document.getElementById('undo-drawing');
+            const clearDrawing = document.getElementById('clear-drawing');
+            const selectorModal = document.getElementById('selector-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalGrid = document.getElementById('modal-grid');
+            const modalClose = document.getElementById('modal-close');
 
             const pages = Array.from(pageDataStorage.querySelectorAll('.page-content'))
                 .sort((a, b) => parseInt(a.dataset.pageNumber) - parseInt(b.dataset.pageNumber));
@@ -594,13 +903,225 @@
             let aspectRatio;
             let selectedElement = null;
             const animationDuration = 800;
-            const baseFontSize = 16; // Base font size for text elements
+            const baseFontSize = 16;
+            let isDrawingMode = false;
+            let drawingContext = null;
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let currentBrushSize = 3;
+            let drawingStrokes = [];
+            let currentStroke = [];
+
+            const shapes = [
+                { id: 'circle', name: 'Circle' },
+                { id: 'square', name: 'Square' },
+                { id: 'line', name: 'Line' },
+                { id: 'arrow', name: 'Arrow' }
+            ];
+            const stickers = ['😺', '🌟', '🍎', '🚀', '🎉'];
+
+            function setupDrawingCanvas(pageElement) {
+                if (!pageElement || pageElement.classList.contains('placeholder-page')) return;
+                const rect = pageElement.getBoundingClientRect();
+                drawingCanvas.width = rect.width;
+                drawingCanvas.height = rect.height;
+                drawingCanvas.style.width = `${rect.width}px`;
+                drawingCanvas.style.height = `${rect.height}px`;
+                drawingContext = drawingCanvas.getContext('2d');
+                drawingContext.strokeStyle = colorPicker.value;
+                drawingContext.lineWidth = currentBrushSize;
+                drawingContext.lineCap = 'round';
+                drawingStrokes = [];
+                currentStroke = [];
+                undoDrawing.disabled = true;
+            }
+
+            function toggleDrawingMode() {
+                isDrawingMode = !isDrawingMode;
+                const targetPage = rightPageDisplay.querySelector('.page-content:not(.placeholder-page)') || leftPageDisplay.querySelector('.page-content:not(.placeholder-page)');
+                if (!targetPage) {
+                    isDrawingMode = false;
+                    drawingButton.classList.remove('bg-emerald-600');
+                    drawingControls.style.display = 'none';
+                    return;
+                }
+
+                if (isDrawingMode) {
+                    drawingButton.classList.add('bg-emerald-600');
+                    targetPage.classList.add('drawing-active');
+                    targetPage.appendChild(drawingCanvas);
+                    drawingCanvas.style.display = 'block';
+                    drawingControls.style.display = 'flex';
+                    setupDrawingCanvas(targetPage);
+                } else {
+                    drawingButton.classList.remove('bg-emerald-600');
+                    targetPage.classList.remove('drawing-active');
+                    drawingCanvas.style.display = 'none';
+                    drawingControls.style.display = 'none';
+                    saveDrawing(targetPage);
+                }
+            }
+
+           function saveDrawing(targetPage) {
+    if (!drawingContext || !targetPage) return;
+    const dataUrl = drawingCanvas.toDataURL('image/png');
+    addImageElement(dataUrl, targetPage);
+    drawingContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    drawingStrokes = [];
+    undoDrawing.disabled = true;
+}
+
+
+            function clearCanvas() {
+                if (drawingContext) {
+                    drawingContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                    drawingStrokes = [];
+                    currentStroke = [];
+                    undoDrawing.disabled = true;
+                }
+            }
+
+            function undoLastStroke() {
+                drawingStrokes.pop();
+                drawingContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                drawingStrokes.forEach(stroke => {
+                    drawingContext.beginPath();
+                    drawingContext.strokeStyle = stroke.color;
+                    drawingContext.lineWidth = stroke.size;
+                    stroke.points.forEach((point, index) => {
+                        if (index === 0) {
+                            drawingContext.moveTo(point.x, point.y);
+                        } else {
+                            drawingContext.lineTo(point.x, point.y);
+                        }
+                    });
+                    drawingContext.stroke();
+                });
+                undoDrawing.disabled = drawingStrokes.length === 0;
+            }
+
+            function startDrawing(e) {
+                if (!isDrawingMode) return;
+                isDrawing = true;
+                const rect = drawingCanvas.getBoundingClientRect();
+                lastX = e.clientX - rect.left;
+                lastY = e.clientY - rect.top;
+                currentStroke = [{ x: lastX, y: lastY, color: colorPicker.value, size: currentBrushSize }];
+            }
+
+            function draw(e) {
+                if (!isDrawing || !isDrawingMode) return;
+                e.preventDefault();
+                const rect = drawingCanvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                drawingContext.beginPath();
+                drawingContext.moveTo(lastX, lastY);
+                drawingContext.lineTo(x, y);
+                drawingContext.stroke();
+
+                currentStroke.push({ x, y, color: colorPicker.value, size: currentBrushSize });
+
+                lastX = x;
+                lastY = y;
+            }
+
+            function stopDrawing() {
+                if (isDrawing && currentStroke.length > 1) {
+                    drawingStrokes.push({ points: currentStroke, color: colorPicker.value, size: currentBrushSize });
+                    undoDrawing.disabled = false;
+                }
+                isDrawing = false;
+                currentStroke = [];
+            }
+
+            function showSelectorModal(type, callback) {
+                const targetPage = rightPageDisplay.querySelector('.page-content:not(.placeholder-page)') || leftPageDisplay.querySelector('.page-content:not(.placeholder-page)');
+                if (!targetPage) return;
+
+                modalTitle.textContent = type === 'shape' ? 'Select a Shape' : 'Select a Sticker';
+                modalGrid.innerHTML = '';
+
+                const items = type === 'shape' ? shapes : stickers;
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.classList.add('modal-item', type === 'shape' ? `shape-${item.id || item}` : 'sticker');
+                    if (type === 'shape') {
+                        div.textContent = item.name;
+                    } else {
+                        div.textContent = item;
+                    }
+                    div.addEventListener('click', () => {
+                        callback(type === 'shape' ? item.id : item, targetPage);
+                        selectorModal.style.display = 'none';
+                    });
+                    modalGrid.appendChild(div);
+                });
+
+                selectorModal.style.display = 'flex';
+            }
+
+            function addShapeElement(shapeType, targetPage) {
+                if (!targetPage || targetPage.classList.contains('placeholder-page')) return;
+
+                deselectElement();
+                const shapeElement = document.createElement('div');
+                shapeElement.classList.add('scrapbook-element', 'scrapbook-shape', shapeType);
+
+                const pasteX = targetPage.scrollLeft + targetPage.offsetWidth * 0.1;
+                const pasteY = targetPage.scrollTop + targetPage.offsetHeight * 0.1;
+
+                shapeElement.style.position = 'absolute';
+                shapeElement.style.left = `${pasteX}px`;
+                shapeElement.style.top = `${pasteY}px`;
+                shapeElement.style.width = shapeType === 'line' || shapeType === 'arrow' ? '100px' : '50px';
+                shapeElement.style.height = shapeType === 'line' || shapeType === 'arrow' ? '4px' : '50px';
+                elementZIndex++;
+                shapeElement.style.zIndex = elementZIndex;
+
+                targetPage.appendChild(shapeElement);
+                makeElementInteractive(shapeElement);
+                selectElement(shapeElement);
+            }
+
+            function addStickerElement(sticker, targetPage) {
+                if (!targetPage || targetPage.classList.contains('placeholder-page')) return;
+
+                deselectElement();
+                const stickerElement = document.createElement('div');
+                stickerElement.classList.add('scrapbook-element', 'scrapbook-sticker');
+                stickerElement.textContent = sticker;
+
+                const pasteX = targetPage.scrollLeft + targetPage.offsetWidth * 0.1;
+                const pasteY = targetPage.scrollTop + targetPage.offsetHeight * 0.1;
+
+                stickerElement.style.position = 'absolute';
+                stickerElement.style.left = `${pasteX}px`;
+                stickerElement.style.top = `${pasteY}px`;
+                stickerElement.style.width = '50px';
+                stickerElement.style.height = '50px';
+                elementZIndex++;
+                stickerElement.style.zIndex = elementZIndex;
+
+                targetPage.appendChild(stickerElement);
+                makeElementInteractive(stickerElement);
+                selectElement(stickerElement);
+            }
 
             function updateView() {
                 deselectElement();
                 leftPageDisplay.innerHTML = '';
                 rightPageDisplay.innerHTML = '';
                 coverContentDisplay.style.display = 'none';
+                if (isDrawingMode) {
+                    isDrawingMode = false;
+                    drawingButton.classList.remove('bg-emerald-600');
+                    drawingCanvas.style.display = 'none';
+                    drawingControls.style.display = 'none';
+                }
+
                 let leftPageContent = null;
                 let rightPageContent = null;
 
@@ -669,7 +1190,7 @@
             }
 
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('.scrapbook-element') && (
+                if (!e.target.closest('.scrapbook-element') && !e.target.closest('.modal-content') && (
                     e.target.classList.contains('page-display') ||
                     e.target.classList.contains('page-content') ||
                     e.target.classList.contains('notebook') ||
@@ -677,6 +1198,7 @@
                     e.target.classList.contains('controls-container') ||
                     e.target === document.body)) {
                     deselectElement();
+                    selectorModal.style.display = 'none';
                 }
             });
 
@@ -715,8 +1237,8 @@
                 textElement.style.position = 'absolute';
                 textElement.style.left = `${Math.max(0, x)}px`;
                 textElement.style.top = `${Math.max(0, y)}px`;
-                textElement.style.width = '150px'; // Default width
-                textElement.style.height = '50px'; // Default height
+                textElement.style.width = '150px';
+                textElement.style.height = '50px';
                 elementZIndex++;
                 textElement.style.zIndex = elementZIndex;
 
@@ -798,8 +1320,8 @@
                             textElement.style.position = 'absolute';
                             textElement.style.left = `${pasteX}px`;
                             textElement.style.top = `${pasteY}px`;
-                            textElement.style.width = '150px'; // Default width
-                            textElement.style.height = '50px'; // Default height
+                            textElement.style.width = '150px';
+                            textElement.style.height = '50px';
                             elementZIndex++;
                             textElement.style.zIndex = elementZIndex;
 
@@ -826,7 +1348,6 @@
                 });
                 element.appendChild(deleteBtn);
 
-                // Add resize handles to all scrapbook elements
                 ['nw', 'ne', 'sw', 'se'].forEach(handleType => {
                     const handle = document.createElement('div');
                     handle.classList.add('resize-handle', handleType);
@@ -876,7 +1397,6 @@
                     const leftPageRect = leftPageDisplay.getBoundingClientRect();
                     const rightPageRect = rightPageDisplay.getBoundingClientRect();
 
-                    // Determine which page the mouse is over
                     let targetPage = parent;
                     const mouseX = e.clientX;
                     const mouseY = e.clientY;
@@ -889,29 +1409,24 @@
                         targetPage = rightPageDisplay.querySelector('.page-content');
                     }
 
-                    // Move element to target page if it has changed
                     if (targetPage !== parent && targetPage && !targetPage.classList.contains('placeholder-page')) {
                         const oldParentRect = parent.getBoundingClientRect();
                         const newParentRect = targetPage.getBoundingClientRect();
 
-                        // Calculate new position relative to the target page
                         const currentX = parseFloat(draggedElement.style.left) || 0;
                         const currentY = parseFloat(draggedElement.style.top) || 0;
                         let newX = currentX + (oldParentRect.left - newParentRect.left);
                         let newY = currentY + (oldParentRect.top - newParentRect.top);
 
-                        // Append to new page and update position
                         targetPage.appendChild(draggedElement);
                         parent = targetPage;
 
-                        // Ensure position is within new page bounds
                         newX = Math.max(0, Math.min(newX, parent.scrollWidth - draggedElement.offsetWidth));
                         newY = Math.max(0, Math.min(newY, parent.scrollHeight - draggedElement.offsetHeight));
                         draggedElement.style.left = `${newX}px`;
                         draggedElement.style.top = `${newY}px`;
                     }
 
-                    // Update position within the current (or new) parent
                     const parentRect = parent.getBoundingClientRect();
                     let x = e.clientX - parentRect.left - offsetX + parent.scrollLeft;
                     let y = e.clientY - parentRect.top - offsetY + parent.scrollTop;
@@ -968,58 +1483,104 @@
 
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
-                const originalLeft = parseFloat(resizingElement.style.left || 0);
-                const originalTop = parseFloat(resizingElement.style.top || 0);
+                const parent = resizingElement.parentElement;
+                const parentWidth = parent.scrollWidth;
+                const parentHeight = parent.scrollHeight;
+                let originalLeft = parseFloat(resizingElement.style.left || 0);
+                let originalTop = parseFloat(resizingElement.style.top || 0);
 
                 let newWidth = startWidth;
                 let newHeight = startHeight;
-
-                // Handle resizing based on the handle being dragged
-                if (resizeHandle.classList.contains('se')) {
-                    newWidth = startWidth + dx;
-                    newHeight = resizingElement.classList.contains('scrapbook-image') ? newWidth / aspectRatio : startHeight + dy;
-                } else if (resizeHandle.classList.contains('sw')) {
-                    newWidth = startWidth - dx;
-                    newHeight = resizingElement.classList.contains('scrapbook-image') ? newWidth / aspectRatio : startHeight + dy;
-                } else if (resizeHandle.classList.contains('ne')) {
-                    newWidth = startWidth + dx;
-                    newHeight = resizingElement.classList.contains('scrapbook-image') ? newWidth / aspectRatio : startHeight - dy;
-                } else if (resizeHandle.classList.contains('nw')) {
-                    newWidth = startWidth - dx;
-                    newHeight = resizingElement.classList.contains('scrapbook-image') ? newWidth / aspectRatio : startHeight - dy;
-                }
+                let newLeft = originalLeft;
+                let newTop = originalTop;
 
                 const minSize = 30;
-                newWidth = Math.max(minSize, newWidth);
-                if (resizingElement.classList.contains('scrapbook-image')) {
-                    newHeight = newWidth / aspectRatio;
-                    if (newHeight < minSize) {
-                        newHeight = minSize;
-                        newWidth = newHeight * aspectRatio;
+
+                if (resizeHandle.classList.contains('se')) {
+                    newWidth = Math.max(minSize, startWidth + dx);
+                    newWidth = Math.min(newWidth, parentWidth - originalLeft);
+                    if (resizingElement.classList.contains('scrapbook-image')) {
+                        newHeight = newWidth / aspectRatio;
+                        if (newHeight > parentHeight - originalTop) {
+                            newHeight = parentHeight - originalTop;
+                            newWidth = newHeight * aspectRatio;
+                        }
+                    } else {
+                        newHeight = Math.max(minSize, startHeight + dy);
+                        newHeight = Math.min(newHeight, parentHeight - originalTop);
                     }
-                } else {
-                    newHeight = Math.max(minSize, newHeight);
+                } else if (resizeHandle.classList.contains('sw')) {
+                    newWidth = Math.max(minSize, startWidth - dx);
+                    newLeft = originalLeft + (startWidth - newWidth);
+                    newLeft = Math.max(0, Math.min(newLeft, originalLeft));
+                    newWidth = Math.min(newWidth, originalLeft + startWidth);
+                    if (resizingElement.classList.contains('scrapbook-image')) {
+                        newHeight = newWidth / aspectRatio;
+                        if (newHeight > parentHeight - originalTop) {
+                            newHeight = parentHeight - originalTop;
+                            newWidth = newHeight * aspectRatio;
+                            newLeft = originalLeft + (startWidth - newWidth);
+                            newLeft = Math.max(0, newLeft);
+                        }
+                    } else {
+                        newHeight = Math.max(minSize, startHeight + dy);
+                        newHeight = Math.min(newHeight, parentHeight - originalTop);
+                    }
+                } else if (resizeHandle.classList.contains('ne')) {
+                    newWidth = Math.max(minSize, startWidth + dx);
+                    newWidth = Math.min(newWidth, parentWidth - originalLeft);
+                    newTop = originalTop + (startHeight - newHeight);
+                    if (resizingElement.classList.contains('scrapbook-image')) {
+                        newHeight = newWidth / aspectRatio;
+                        newTop = originalTop + (startHeight - newHeight);
+                        newTop = Math.max(0, Math.min(newTop, originalTop));
+                        if (newHeight > parentHeight) {
+                            newHeight = parentHeight;
+                            newWidth = newHeight * aspectRatio;
+                            newTop = originalTop + (startHeight - newHeight);
+                            newTop = Math.max(0, newTop);
+                        }
+                    } else {
+                        newHeight = Math.max(minSize, startHeight - dy);
+                        newTop = originalTop + (startHeight - newHeight);
+                        newTop = Math.max(0, Math.min(newTop, originalTop));
+                    }
+                } else if (resizeHandle.classList.contains('nw')) {
+                    newWidth = Math.max(minSize, startWidth - dx);
+                    newLeft = originalLeft + (startWidth - newWidth);
+                    newLeft = Math.max(0, Math.min(newLeft, originalLeft));
+                    newWidth = Math.min(newWidth, originalLeft + startWidth);
+                    if (resizingElement.classList.contains('scrapbook-image')) {
+                        newHeight = newWidth / aspectRatio;
+                        newTop = originalTop + (startHeight - newHeight);
+                        newTop = Math.max(0, Math.min(newTop, originalTop));
+                        if (newHeight > parentHeight) {
+                            newHeight = parentHeight;
+                            newWidth = newHeight * aspectRatio;
+                            newLeft = originalLeft + (startWidth - newWidth);
+                            newLeft = Math.max(0, newLeft);
+                            newTop = originalTop + (startHeight - newHeight);
+                            newTop = Math.max(0, newTop);
+                        }
+                    } else {
+                        newHeight = Math.max(minSize, startHeight - dy);
+                        newTop = originalTop + (startHeight - newHeight);
+                        newTop = Math.max(0, Math.min(newTop, originalTop));
+                    }
                 }
+
+                newWidth = Math.max(minSize, newWidth);
+                newHeight = Math.max(minSize, newHeight);
 
                 resizingElement.style.width = `${newWidth}px`;
                 resizingElement.style.height = `${newHeight}px`;
+                resizingElement.style.left = `${newLeft}px`;
+                resizingElement.style.top = `${newTop}px`;
 
-                // Scale font size for text elements
                 if (resizingElement.classList.contains('scrapbook-text')) {
                     const scaleFactor = newWidth / startWidth;
                     const newFontSize = startFontSize * scaleFactor;
-                    resizingElement.style.fontSize = `${Math.max(10, newFontSize)}px`; // Minimum font size of 10px
-                }
-
-                const widthChange = startWidth - newWidth;
-                const heightChange = startHeight - newHeight;
-
-                // Adjust position based on handle
-                if (resizeHandle.classList.contains('sw') || resizeHandle.classList.contains('nw')) {
-                    resizingElement.style.left = `${originalLeft + widthChange}px`;
-                }
-                if (resizeHandle.classList.contains('ne') || resizeHandle.classList.contains('nw')) {
-                    resizingElement.style.top = `${originalTop + heightChange}px`;
+                    resizingElement.style.fontSize = `${Math.max(10, newFontSize)}px`;
                 }
             }
 
@@ -1090,6 +1651,9 @@
                 const leftPage = leftPageDisplay.querySelector('.page-content:not(.placeholder-page)');
                 const rightPage = rightPageDisplay.querySelector('.page-content:not(.placeholder-page)');
                 addImageButton.disabled = currentSpreadIndex === 0 || (!leftPage && !rightPage);
+                addShapeButton.disabled = addImageButton.disabled;
+                addStickerButton.disabled = addImageButton.disabled;
+                drawingButton.disabled = addImageButton.disabled;
                 addImageButton.title = addImageButton.disabled ? (currentSpreadIndex === 0 ? "Cannot add images to the cover" : "No page available to add image") : "Add Image from Device";
             }
 
@@ -1117,6 +1681,81 @@
                 e.target.value = null;
             });
 
+            addShapeButton.addEventListener('click', () => {
+                if (!addShapeButton.disabled) {
+                    showSelectorModal('shape', addShapeElement);
+                }
+            });
+
+            addStickerButton.addEventListener('click', () => {
+                if (!addStickerButton.disabled) {
+                    showSelectorModal('sticker', addStickerElement);
+                }
+            });
+
+            modalClose.addEventListener('click', () => {
+                selectorModal.style.display = 'none';
+            });
+
+            drawingButton.addEventListener('click', toggleDrawingMode);
+
+            colorPicker.addEventListener('change', () => {
+                if (drawingContext) {
+                    drawingContext.strokeStyle = colorPicker.value;
+                }
+            });
+
+            brushSmall.addEventListener('click', () => {
+                currentBrushSize = 3;
+                brushSmall.classList.add('selected');
+                brushMedium.classList.remove('selected');
+                brushLarge.classList.remove('selected');
+                if (drawingContext) {
+                    drawingContext.lineWidth = currentBrushSize;
+                }
+            });
+
+            brushMedium.addEventListener('click', () => {
+                currentBrushSize = 6;
+                brushSmall.classList.remove('selected');
+                brushMedium.classList.add('selected');
+                brushLarge.classList.remove('selected');
+                if (drawingContext) {
+                    drawingContext.lineWidth = currentBrushSize;
+                }
+            });
+
+            brushLarge.addEventListener('click', () => {
+                currentBrushSize = 10;
+                brushSmall.classList.remove('selected');
+                brushMedium.classList.remove('selected');
+                brushLarge.classList.add('selected');
+                if (drawingContext) {
+                    drawingContext.lineWidth = currentBrushSize;
+                }
+            });
+
+            undoDrawing.addEventListener('click', undoLastStroke);
+
+            clearDrawing.addEventListener('click', clearCanvas);
+
+            drawingCanvas.addEventListener('mousedown', startDrawing);
+            drawingCanvas.addEventListener('mousemove', draw);
+            drawingCanvas.addEventListener('mouseup', stopDrawing);
+            drawingCanvas.addEventListener('mouseleave', stopDrawing);
+
+            drawingCanvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                startDrawing({ clientX: touch.clientX, clientY: touch.clientY });
+            });
+            drawingCanvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                draw({ clientX: touch.clientX, clientY: touch.clientY });
+            });
+            drawingCanvas.addEventListener('touchend', stopDrawing);
+
             document.addEventListener('keydown', (e) => {
                 if (e.target.closest('[contenteditable="true"]') || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
                     if ((e.key === 'Backspace' || e.key === 'Delete') && selectedElement && document.activeElement !== selectedElement && !selectedElement.contains(document.activeElement)) {
@@ -1137,6 +1776,8 @@
                     e.preventDefault();
                     selectedElement.remove();
                     selectedElement = null;
+                } else if (e.key === 'Escape' && selectorModal.style.display === 'flex') {
+                    selectorModal.style.display = 'none';
                 }
             });
 
