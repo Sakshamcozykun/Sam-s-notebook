@@ -167,6 +167,7 @@
             -webkit-user-select: text;
             -moz-user-select: text;
             -ms-user-select: text;
+            font-size: 16px; /* Default font size */
         }
 
         .scrapbook-text:focus {
@@ -246,8 +247,8 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
-        .scrapbook-image:hover .resize-handle,
-        .scrapbook-image.selected .resize-handle {
+        .scrapbook-element:hover .resize-handle,
+        .scrapbook-element.selected .resize-handle {
             display: block;
             opacity: 1;
         }
@@ -503,6 +504,7 @@
 
     <input type="file" id="image-upload-input" accept="image/*">
 
+    
     <div class="controls-container">
         <button id="prev-page" class="control-button tooltip-trigger" disabled>
             <span class="tooltip">Previous Page</span>
@@ -588,10 +590,11 @@
             let dragStartX, dragStartY;
             let resizingElement = null;
             let resizeHandle = null;
-            let startX, startY, startWidth, startHeight;
+            let startX, startY, startWidth, startHeight, startFontSize;
             let aspectRatio;
             let selectedElement = null;
             const animationDuration = 800;
+            const baseFontSize = 16; // Base font size for text elements
 
             function updateView() {
                 deselectElement();
@@ -712,6 +715,8 @@
                 textElement.style.position = 'absolute';
                 textElement.style.left = `${Math.max(0, x)}px`;
                 textElement.style.top = `${Math.max(0, y)}px`;
+                textElement.style.width = '150px'; // Default width
+                textElement.style.height = '50px'; // Default height
                 elementZIndex++;
                 textElement.style.zIndex = elementZIndex;
 
@@ -728,8 +733,6 @@
                 imgElementContainer.classList.add('scrapbook-element', 'scrapbook-image');
                 const img = document.createElement('img');
                 img.src = imageDataUrl;
-                img.style.maxWidth = '200px';
-                img.style.maxHeight = '200px';
                 imgElementContainer.appendChild(img);
 
                 const pasteX = targetPageElement.scrollLeft + targetPageElement.offsetWidth * 0.1;
@@ -742,8 +745,17 @@
                 imgElementContainer.style.zIndex = elementZIndex;
 
                 img.onload = () => {
-                    imgElementContainer.style.width = `${img.offsetWidth}px`;
-                    imgElementContainer.style.height = `${img.offsetHeight}px`;
+                    const maxWidth = 200;
+                    const maxHeight = 200;
+                    let width = img.naturalWidth;
+                    let height = img.naturalHeight;
+                    if (width > maxWidth || height > maxHeight) {
+                        const scale = Math.min(maxWidth / width, maxHeight / height);
+                        width *= scale;
+                        height *= scale;
+                    }
+                    imgElementContainer.style.width = `${width}px`;
+                    imgElementContainer.style.height = `${height}px`;
                     makeElementInteractive(imgElementContainer);
                     selectElement(imgElementContainer);
                 };
@@ -786,6 +798,8 @@
                             textElement.style.position = 'absolute';
                             textElement.style.left = `${pasteX}px`;
                             textElement.style.top = `${pasteY}px`;
+                            textElement.style.width = '150px'; // Default width
+                            textElement.style.height = '50px'; // Default height
                             elementZIndex++;
                             textElement.style.zIndex = elementZIndex;
 
@@ -812,14 +826,13 @@
                 });
                 element.appendChild(deleteBtn);
 
-                if (element.classList.contains('scrapbook-image')) {
-                    ['nw', 'ne', 'sw', 'se'].forEach(handleType => {
-                        const handle = document.createElement('div');
-                        handle.classList.add('resize-handle', handleType);
-                        handle.addEventListener('mousedown', onResizeHandleMouseDown);
-                        element.appendChild(handle);
-                    });
-                }
+                // Add resize handles to all scrapbook elements
+                ['nw', 'ne', 'sw', 'se'].forEach(handleType => {
+                    const handle = document.createElement('div');
+                    handle.classList.add('resize-handle', handleType);
+                    handle.addEventListener('mousedown', onResizeHandleMouseDown);
+                    element.appendChild(handle);
+                });
             }
 
             function makeElementInteractive(element) {
@@ -931,7 +944,7 @@
                 e.stopPropagation();
                 e.preventDefault();
 
-                resizingElement = e.target.closest('.scrapbook-image');
+                resizingElement = e.target.closest('.scrapbook-element');
                 if (!resizingElement) return;
 
                 resizeHandle = e.target;
@@ -941,7 +954,8 @@
                 startY = e.clientY;
                 startWidth = resizingElement.offsetWidth;
                 startHeight = resizingElement.offsetHeight;
-                aspectRatio = img ? img.naturalWidth / img.naturalHeight : startWidth / startHeight;
+                startFontSize = resizingElement.classList.contains('scrapbook-text') ? parseFloat(window.getComputedStyle(resizingElement).fontSize) : baseFontSize;
+                aspectRatio = img ? img.naturalWidth / img.naturalHeight : (startWidth / startHeight);
                 if (isNaN(aspectRatio) || aspectRatio <= 0) aspectRatio = 1;
 
                 document.addEventListener('mousemove', onResizeMouseMove);
@@ -960,34 +974,47 @@
                 let newWidth = startWidth;
                 let newHeight = startHeight;
 
+                // Handle resizing based on the handle being dragged
                 if (resizeHandle.classList.contains('se')) {
                     newWidth = startWidth + dx;
-                    newHeight = newWidth / aspectRatio;
+                    newHeight = resizingElement.classList.contains('scrapbook-image') ? newWidth / aspectRatio : startHeight + dy;
                 } else if (resizeHandle.classList.contains('sw')) {
                     newWidth = startWidth - dx;
-                    newHeight = newWidth / aspectRatio;
+                    newHeight = resizingElement.classList.contains('scrapbook-image') ? newWidth / aspectRatio : startHeight + dy;
                 } else if (resizeHandle.classList.contains('ne')) {
                     newWidth = startWidth + dx;
-                    newHeight = newWidth / aspectRatio;
+                    newHeight = resizingElement.classList.contains('scrapbook-image') ? newWidth / aspectRatio : startHeight - dy;
                 } else if (resizeHandle.classList.contains('nw')) {
                     newWidth = startWidth - dx;
-                    newHeight = newWidth / aspectRatio;
+                    newHeight = resizingElement.classList.contains('scrapbook-image') ? newWidth / aspectRatio : startHeight - dy;
                 }
 
                 const minSize = 30;
                 newWidth = Math.max(minSize, newWidth);
-                newHeight = newWidth / aspectRatio;
-                if (newHeight < minSize) {
-                    newHeight = minSize;
-                    newWidth = newHeight * aspectRatio;
+                if (resizingElement.classList.contains('scrapbook-image')) {
+                    newHeight = newWidth / aspectRatio;
+                    if (newHeight < minSize) {
+                        newHeight = minSize;
+                        newWidth = newHeight * aspectRatio;
+                    }
+                } else {
+                    newHeight = Math.max(minSize, newHeight);
                 }
 
                 resizingElement.style.width = `${newWidth}px`;
                 resizingElement.style.height = `${newHeight}px`;
 
+                // Scale font size for text elements
+                if (resizingElement.classList.contains('scrapbook-text')) {
+                    const scaleFactor = newWidth / startWidth;
+                    const newFontSize = startFontSize * scaleFactor;
+                    resizingElement.style.fontSize = `${Math.max(10, newFontSize)}px`; // Minimum font size of 10px
+                }
+
                 const widthChange = startWidth - newWidth;
                 const heightChange = startHeight - newHeight;
 
+                // Adjust position based on handle
                 if (resizeHandle.classList.contains('sw') || resizeHandle.classList.contains('nw')) {
                     resizingElement.style.left = `${originalLeft + widthChange}px`;
                 }
